@@ -7,12 +7,14 @@ import com.corner.catvodcore.util.Paths
 import com.corner.catvodcore.util.Urls
 import com.corner.catvodcore.util.Utils
 import com.github.catvod.crawler.Spider
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.lang.reflect.Method
 import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentHashMap
 
 object JarLoader {
+    private val log = LoggerFactory.getLogger(this::class.java)
     private val loaders: ConcurrentHashMap<String, URLClassLoader> by lazy { ConcurrentHashMap() }
 
     //proxy method
@@ -30,22 +32,32 @@ object JarLoader {
 
     fun loadJar(key: String, spider: String) {
         val texts = spider.split(Constant.md5Split)
-//        val md5 = if(texts.size<=1) "" else texts[1].trim()
+        val md5 = if(texts.size<=1) "" else texts[1].trim()
         val jar = texts[0]
 
-        if(Paths.jar(jar).exists()){
-            load(key, Paths.jar(jar))
+        // 可以避免重复下载
+        if(md5.isNotEmpty() && Utils.equals(parseJarUrl(jar), md5)){
+            load(key, Paths.jar(parseJarUrl(jar)))
         }else if (jar.startsWith("file")) {
             load(key, Paths.local(jar))
         } else if (jar.startsWith("http")) {
             load(key, download(jar))
         } else {
-             loadJar(key, Urls.convert(ApiConfig.api.url!!, spider))
+             loadJar(key, Urls.convert(ApiConfig.api.url!!, jar))
         }
 
     }
 
+    /**
+     * 如果在配置文件种使用的相对路径， 下载的时候使用的全路径 如果的判断md5是否一致的时候使用相对路径 就会造成重复下载
+     */
+    private fun parseJarUrl(jar: String): String {
+        if(jar.startsWith("file") || jar.startsWith("http")) return jar
+        return Urls.convert(ApiConfig.api.url!!, jar)
+    }
+
     private fun load(key: String, jar: File) {
+        log.debug("load jar {}", jar)
         loaders[key] =  URLClassLoader(arrayOf(jar.toURI().toURL()),this.javaClass.classLoader)
         putProxy(key)
         invokeInit(key)
@@ -83,7 +95,7 @@ object JarLoader {
                 loader!!.loadClass(classPath).getDeclaredConstructor()
                     .newInstance() as Spider
             spider.init(ext)
-            spiders.put(spKey, spider)
+            spiders[spKey] = spider
             return spider
         } catch (e: Exception) {
             e.printStackTrace()
@@ -92,7 +104,9 @@ object JarLoader {
     }
 
     private fun download(jar: String): File {
-        return Paths.write(Paths.jar(jar), Http.Get(jar).execute().body.bytes())
+        val jarPath = Paths.jar(jar)
+        log.debug("download jar file {} to:{}",jar, jarPath)
+        return Paths.write(jarPath, Http.Get(jar).execute().body.bytes())
     }
 
     fun proxyInvoke(params: Map<String, String>): Array<Any>? {

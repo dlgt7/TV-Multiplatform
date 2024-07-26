@@ -5,29 +5,45 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.isTypedEvent
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import com.corner.catvodcore.viewmodel.GlobalModel
+import com.corner.ui.player.PlayState
 import com.corner.ui.player.vlcj.VlcjFrameController
-import uk.co.caprica.vlcj.player.base.State
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun FrameContainer(
     modifier: Modifier = Modifier,
     controller: VlcjFrameController,
-    onClick:()->Unit
+    onClick: () -> Unit
 ) {
     val playerState = controller.state.collectAsState()
     val bitmap by remember { controller.imageBitmapState }
@@ -79,23 +95,74 @@ fun FrameContainer(
             true
         }, contentAlignment = Alignment.Center
     ) {
-        if(bitmap != null){
+        Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
             bitmap?.let {
                 Image(bitmap = it, contentDescription = "Video", modifier = Modifier.fillMaxSize())
             }
-        }else{
-            Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
-                if(playerState.value.isBuffering){
-                    androidx.compose.material3.CircularProgressIndicator(Modifier.align(Alignment.Center))
-                }else {
-                    Image(
-                        modifier = Modifier.align(Alignment.Center),
-                        painter = painterResource("/pic/TV-icon-x.png"),
-                        contentDescription = "nothing here",
-                        contentScale = ContentScale.Crop
-                    )
+            when (playerState.value.state) {
+                PlayState.BUFFERING -> {
+                    if (bitmap != null) {
+                        ProgressIndicator(
+                            Modifier.align(Alignment.Center),
+                            progression = playerState.value.bufferProgression
+                        )
+                    } else {
+                        ProgressIndicator(
+                            Modifier.align(Alignment.Center)
+                        )
+                    }
                 }
+
+                PlayState.ERROR -> {
+                    Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        verticalArrangement = Arrangement.spacedBy(5.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            Icons.Default.ErrorOutline,
+                            contentDescription = "error icon",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(playerState.value.msg, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+
+                else -> {
+                    if (bitmap == null) {
+                        Image(
+                            modifier = Modifier.align(Alignment.Center),
+                            painter = painterResource("/pic/TV-icon-x.png"),
+                            contentDescription = "nothing here",
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
+//                }
             }
         }
+    }
+}
+
+@Composable
+fun ProgressIndicator(modifier: Modifier, text: String = "加载中...", progression: Float = -1f) {
+    Column(modifier) {
+        if (progression != -1f) {
+            CircularProgressIndicator(
+                progress = { progression },
+            )
+        } else {
+            CircularProgressIndicator()
+        }
+        Text(
+            if (progression != -1f) "%.2f".format(progression) + "%" else text, style = TextStyle(
+                color = MaterialTheme.colorScheme.primary, shadow = Shadow(
+                    color = Color.Black,
+                    offset = Offset(8f, 8f),
+                    blurRadius = 8f
+                ),
+                fontWeight = FontWeight.Bold
+            )
+        )
     }
 }

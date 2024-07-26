@@ -2,6 +2,7 @@ import com.corner.catvodcore.bean.Result
 import com.corner.catvodcore.util.Jsons
 import com.corner.catvodcore.util.KtorClient
 import com.corner.catvodcore.util.Urls
+import com.corner.catvodcore.util.Utils
 import com.corner.server.KtorD
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -10,6 +11,8 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.encodeToJsonElement
+import java.io.File
+import java.net.URI
 import java.net.URL
 import java.util.*
 import kotlin.test.Test
@@ -35,9 +38,31 @@ class commonTest {
     }
 
     @Test
+    fun resolve(){
+//        val convert = Urls.convert(
+//            "F:/sync/compose-mutiplatform-workspace/My/CatVodSpider/json/config.json",
+//            "alist.json"
+//        )
+//        val url1 = URI("F:/sync/compose-mutiplatform-workspace/My/CatVodSpider/json/config.json")
+//        println(
+//            Paths.get("F:/sync/compose-mutiplatform-workspace/My/CatVodSpider/json/config.json")
+//                .resolve("./alist.json")
+//        )
+        println(URI("file:/F:/sync/compose-mutiplatform-workspace/My/CatVodSpider/json/config.json").resolve("./alist.json"))
+//        val path = Paths.get(URI("F:/sync/compose-mutiplatform-workspace/My/CatVodSpider/json/config.json"))
+//            .resolve("./alist.json").toString()
+//        println(path)
+    }
+
+    @Test
+    fun md5Test(){
+        println(Utils.md5(File("F:\\sync\\compose-mutiplatform-workspace\\My\\CatVodSpider\\jar\\spider.jar")))
+    }
+
+    @Test
     fun splitTest() {
         val s = "$$$$$$"
-        val split = s.split("\\$\\$\\$".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val split = s.split("/$/$/$".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         println(split)
     }
 
@@ -48,7 +73,7 @@ class commonTest {
     @Test
     fun urlTest(){
         val s = "file://F:/sync/compose-mutiplatform-workspace/TV-Multiplatform/shared/src/desktopTest/resources/config.json"
-        val s2 = "file://F:\\sync\\compose-mutiplatform-workspace\\TV-Multiplatform\\shared\\src\\desktopTest\\resources\\config.json";
+        val s2 = "file://F:/sync/compose-mutiplatform-workspace/TV-Multiplatform/shared/src/desktopTest/resources/config.json";
         val url1 = URL(s2)
 //        val uri = URI(s)
         println(url1.toURI().resolve("../sss.js"))
@@ -77,7 +102,7 @@ class commonTest {
 //        val urlClassLoader =
 //            URLClassLoader(
 //                arrayOf(
-//                    File("F:\\sync\\compose-mutiplatform-workspace\\CatVodSpider\\CatVodSpider\\build\\libs\\CatVodSpider-1.0-SNAPSHOT.jar").toURI()
+//                    File("F:/sync/compose-mutiplatform-workspace/CatVodSpider/CatVodSpider/build/libs/CatVodSpider-1.0-SNAPSHOT.jar").toURI()
 //                        .toURL()
 //                ), commonTest::class.java.classLoader
 //            )
@@ -87,10 +112,10 @@ class commonTest {
 //        loadClass.init()
 
 //        val exists =
-//            File("F:\\sync\\compose-mutiplatform-workspace\\TV-Multiplatform\\shared\\src\\desktopTest\\resources\\7638addc233624a31deb7c569a6bcbc5.jar").exists()
+//            File("F:/sync/compose-mutiplatform-workspace/TV-Multiplatform/shared/src/desktopTest/resources/7638addc233624a31deb7c569a6bcbc5.jar").exists()
 //        val urlClassLoader1 = URLClassLoader(
 //            arrayOf(
-//                File("F:\\sync\\compose-mutiplatform-workspace\\TV-Multiplatform\\shared\\src\\desktopTest\\resources\\7638addc233624a31deb7c569a6bcbc5.jar").toURI()
+//                File("F:/sync/compose-mutiplatform-workspace/TV-Multiplatform/shared/src/desktopTest/resources/7638addc233624a31deb7c569a6bcbc5.jar").toURI()
 //                    .toURL()
 //            )
 //        )
@@ -111,7 +136,7 @@ class commonTest {
     fun playerTest(){
         val string = Jsons.decodeFromString<Result>(
             "{\n" +
-                    "    \"header\": \"{\\\"User-Agent\\\":\\\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36\\\",\\\"Referer\\\":\\\"https://www.aliyundrive.com/\\\"}\",\n" +
+                    "    \"header\": \"{/\"User-Agent/\":/\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36/\",/\"Referer/\":/\"https://www.aliyundrive.com//\"}\",\n" +
                     "    \"format\": \"application/octet-stream\",\n" +
                     "    \"url\": \"http://127.0.0.1:-1/proxy?do=ali&type=video&cate=open&shareId=oZ57YSztbiv&fileId=65818959490bb29ff891425781615706f974e445\",\n" +
                     "    \"subs\": [],\n" +
