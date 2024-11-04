@@ -3,10 +3,10 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.jetbrainsCompose)
-    kotlin("plugin.serialization") version "1.9.20"
-    id("app.cash.sqldelight") version "2.0.0"
-    id("dev.hydraulic.conveyor") version "1.10"
-//    id("io.ktor.plugin") version "2.3.7"
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.serialization)
+    alias(libs.plugins.sqldelight)
+//    alias(libs.plugins.conveyor)
 }
 
 sqldelight {
@@ -24,7 +24,7 @@ kotlin {
         val desktopMain by getting
 
         commonMain.dependencies {
-            val ktorVer = "2.3.12"
+            val ktorVer = "3.0.1"
             val logbackVer = "1.3.14"
             val imageLoader = "1.8.1"
             val hutoolVer = "5.8.27"
@@ -37,7 +37,7 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(compose.materialIconsExtended)
 
-            api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+            api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
             // tool
             api("com.google.guava:guava:31.1-jre")
@@ -82,6 +82,29 @@ kotlin {
             // DLNA
             implementation("org.jupnp:org.jupnp:2.7.1")
             implementation("org.jupnp:org.jupnp.support:2.7.1")
+//            // https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api
+//            implementation("javax.servlet:javax.servlet-api:4.0.1")
+//            // https://mvnrepository.com/artifact/org.eclipse.jetty.ee10/jetty-ee10-servlet
+//            implementation("org.eclipse.jetty.ee10:jetty-ee10-servlet:12.0.14")
+//            // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server
+//            implementation("org.eclipse.jetty:jetty-server:12.0.14")
+//            // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-client
+//            implementation("org.eclipse.jetty:jetty-client:12.0.14")
+
+            api("javax.servlet:javax.servlet-api:4.0.1")
+            // https://mvnrepository.com/artifact/org.eclipse.jetty.ee10/jetty-ee10-servlet
+            api("org.eclipse.jetty.ee10:jetty-ee10-servlet:12.0.14")
+            // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server
+            api("org.eclipse.jetty:jetty-server:12.0.14")
+            // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-client
+            api("org.eclipse.jetty:jetty-client:12.0.14")
+            // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-servlet
+            api("org.eclipse.jetty:jetty-servlet:11.0.24")
+
+
+
+
+
 
             api("com.arkivanov.decompose:decompose:2.2.2")
             api("com.arkivanov.decompose:extensions-compose-jetbrains:2.2.2")
@@ -106,6 +129,7 @@ compose.desktop {
         buildTypes.release.proguard {
 //            obfuscate.set(true)
             isEnabled.set(true)
+            version.set("7.4.0")
             configurationFiles.from(project.file("src/desktopMain/rules.pro"))
         }
 
@@ -127,7 +151,7 @@ compose.desktop {
                 "java.security.jgss",
                 "java.sql",
                 "jdk.httpserver",
-                "jdk.unsupported"
+                "jdk.unsupported",
             )
             val dir = project.layout.projectDirectory.dir("src/desktopMain/resources/res")
             println(dir)
